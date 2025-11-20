@@ -2,8 +2,8 @@
 
 ## 1.Buffer 是干什么的？
 它是你在处理 HTTP 数据时的“暂存区”：  
-网络数据  → 存入 Buffer → 解析 HTTP 请求  
-服务器响应 → 写入 Buffer → 发送到 socket
+* 网络数据  → 存入 Buffer → 解析 HTTP 请求  
+* 服务器响应 → 写入 Buffer → 发送到 socket
 
 ## 2.为什么不直接用 char[] 而要用这个类？
 * 动态扩容
@@ -59,20 +59,20 @@
 | 支持大请求（HTTP POST 上传大文件）             | 与 ReadFd 形成完整的 socket 缓冲读写机制 |
 
 ## 12.readv
-`ssize_t readv(int fd, const struct iovec *iov, int iovcnt)`
+`ssize_t readv(int fd, const struct iovec *iov, int iovcnt)`  
 作用：从 fd 读取数据，并把数据依次写入 iov 数组指定的多个 buffer  
-参数：  
+参数：
 * `fd`：文件描述符（socket/file）
 * `iov`：struct iovec 数组，每个元素是一个 buffer
-* `iovcnt`：数组长度
+* `iovcnt`：数组长度  
 返回值：实际读取的字节数（可能小于总容量）  
-优势：一次系统调用，可以把数据分散写入多个 buffer，减少内存拷贝和循环读取  
+优势：一次系统调用，可以把数据分散写入多个 buffer，减少内存拷贝和循环读取
 
 ## 13.write
-`ssize_t write(int fd, const void* buf, size_t count)`
+`ssize_t write(int fd, const void* buf, size_t count)`  
 作用：将内存 buf 中的 count 字节写入文件描述符 fd（可以是 socket、文件等）  
 返回值：实际写入的字节数（可能小于 count）  
-注意：  
+注意：
 * 在 socket 或非阻塞 IO 下，可能只写一部分，需要循环写
 * 出错返回 -1，并设置 errno
 
@@ -83,10 +83,10 @@ struct iovec {
     size_t iov_len;     // buffer 的长度（字节数）
 };
 ```
-用于分散/聚合IO：  
+用于分散/聚合IO：
 * `readv`  → 分散读（scatter）
-* `writev` → 聚合写（gather）
-好处：  
+* `writev` → 聚合写（gather）  
+好处：
 * 不用自己在循环里分段拷贝
 * 可以把不同数据结构直接映射到不同 buffer
 * 高性能网络服务器常用
