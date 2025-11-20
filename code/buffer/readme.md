@@ -2,13 +2,13 @@
 
 ## 1.Buffer 是干什么的？
 它是你在处理 HTTP 数据时的“暂存区”：  
-网络数据 → 存入 Buffer → 解析 HTTP 请求  
+网络数据  → 存入 Buffer → 解析 HTTP 请求  
 服务器响应 → 写入 Buffer → 发送到 socket
 
 ## 2.为什么不直接用 char[] 而要用这个类？
 * 动态扩容
-* 支持高效网络 IO（使用 readv，减少拷贝）
-* 线程安全（使用 atomic）
+* 支持高效网络 IO（使用 `readv`，减少拷贝）
+* 线程安全（使用 `atomic`）
 * 易管理读写位置
 * 灵活添加、读取、清理数据
 
@@ -16,7 +16,7 @@
 多线程同时读写（每个连接一个线程/事件），指针要保证同步
 
 ## 4.为什么用 readv 而不是 read？
-readv 能将数据“分散”写入多个 buffer，减少一次 IO 读不完的问题
+`readv` 能将数据“分散”写入多个 buffer，减少一次 IO 读不完的问题
 
 ## 5.PrependableBytes() 有什么用？
 读完的数据区域可以重新利用，避免频繁扩容
@@ -27,8 +27,8 @@ readv 能将数据“分散”写入多个 buffer，减少一次 IO 读不完的
 ## 7.size_t 和 ssize_t
 | 类型    | 含义                               | 是否有符号 | 常用在哪                   |
 |---------|------------------------------------|------------|----------------------------|
-| size_t  | 大小（memory大小、容器长度）       | 无符号     | vector.size() / sizeof     |
-| ssize_t | 数据读写长度（可表示失败）         | 有符号     | read() / write() 函数返回值 |
+| `size_t`  | 大小（memory大小、容器长度）       | 无符号     | `vector.size()` / `sizeof`     |
+| `ssize_t` | 数据读写长度（可表示失败）         | 有符号     | `read()` / `write()` 函数返回值 |
 
 ## 8.MakeSpace_() 中的 copy() 与 memmove()
 | 使用方法                                       | 头文件      |
@@ -84,8 +84,8 @@ struct iovec {
 };
 ```
 用于分散/聚合IO：  
-* readv → 分散读（scatter）
-* writev → 聚合写（gather）
+* `readv`  → 分散读（scatter）
+* `writev` → 聚合写（gather）
 好处：  
 * 不用自己在循环里分段拷贝
 * 可以把不同数据结构直接映射到不同 buffer
