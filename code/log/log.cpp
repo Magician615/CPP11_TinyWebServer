@@ -82,7 +82,7 @@ void Log::AsyncWrite_() {
 }
 
 // 初始化日志系统(日志等级,日志保存路径,文件后缀,阻塞队列容量（>0 说明异步写入）)
-void Log::init(int level, const char* path = "./log", const char* suffix = ".log", int maxQueueCapacity = 1024) {
+void Log::init(int level, const char* path, const char* suffix, int maxQueueCapacity) {
     isOpen_ = true; // 设置日志系统打开
     level_ = level;
     path_ = path;

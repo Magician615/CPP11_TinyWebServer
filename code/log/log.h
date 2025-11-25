@@ -15,7 +15,7 @@
 class Log {
 public:
     // 初始化日志系统(日志等级,日志保存路径,文件后缀,阻塞队列容量（>0 说明异步写入）)
-    void init(int level, const char* path = "./log", const char* suffix = ".log", int maxQueueCapacity = 1024);
+    void init(int level = 1, const char* path = "./log", const char* suffix = ".log", int maxQueueCapacity = 1024);
     static Log* Instance();       // 单例设计模式：全局只会有一个 Log 对象
     static void FlushLogThread(); // 异步写日志公有方法，调用私有方法AsyncWrite
 
