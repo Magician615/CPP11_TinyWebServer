@@ -162,5 +162,7 @@ std::string line(buff.Peek(), lineEnd);
 | `write`  | 一次只能写一个缓冲区                           |
 | `writev` | 可以同时发送多个缓冲区（散布-聚集IO）                 |
 | `iovec`  | 一个结构体，代表一段连续内存 `{iov_base, iov_len}` |
+```
 iovec[0] → HTTP响应头  
 iovec[1] → 文件内容（mmap映射）
+```
