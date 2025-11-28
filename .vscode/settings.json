@@ -67,6 +67,12 @@
         "__hash_table": "cpp",
         "__split_buffer": "cpp",
         "__bit_reference": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "regex": "cpp",
+        "map": "cpp",
+        "unordered_set": "cpp",
+        "shared_mutex": "cpp",
+        "buffer": "cpp",
+        "netfwd": "cpp"
     }
 }
