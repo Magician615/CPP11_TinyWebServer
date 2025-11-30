@@ -27,6 +27,7 @@
 | `Wait()`       | 等待触发事件      | 事件循环（核心）      |
 | `GetEventFd()` | 获取事件fd      | epoll_wait后处理 |
 | `GetEvents()`  | 获取事件类型      | 判断读/写等        |  
+
 `Epoller` 只是感知 I/O 就绪，不做读写。真正处理数据在 `HttpConn::process()` 中完成
 
 ## 5.epoll 主要API和参数
