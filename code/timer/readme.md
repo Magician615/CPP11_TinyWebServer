@@ -16,19 +16,19 @@
 为了便于定时器结点的比较，主要是后续堆结构的实现方便，我们还需要重载比较运算符。
 
 ## 3.用到的C++11的时间新特性
-（1）`std::chrono::high_resolution_clock`：
+`std::chrono::high_resolution_clock`：
 * `duration`（一段时间）
 * `time_point`（时间点）  
 
-（2）一般获取时间点是通过clock时钟获得的，一共有3个：
+一般获取时间点是通过clock时钟获得的，一共有3个：
 * `high_resolution_clock`
 * `system_clock`
 * `steady_clock`  
 
-（3）`high_resolution_clock`：  
+`high_resolution_clock`：  
 他有一个 `now()` 方法，可以获取当前时间。注意：`std::chrono::high_resolution_clock`返回的时间点是按秒为单位的。  
 
-（4）`std::chrono::milliseconds`：  
+`std::chrono::milliseconds`：  
 表示毫秒，可用于`duration<>` 的模板类，举例：`chrono::duration_cast<milliseconds>`
 
 ## 4.设计思想
