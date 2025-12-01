@@ -1,12 +1,12 @@
 #include "httprequest.h"
 
 // 不带.html 的 URL，如果用户只访问 /index，就自动变成 /index.html
-const std::unordered_set<std::string> DEFAULT_HTML{
+const std::unordered_set<std::string> HttpRequest::DEFAULT_HTML{
     "/index", "/register", "/login", "/welcome", "/video", "/picture",
 };
 
 // 判断访问 .html 页面类型
-const std::unordered_map<std::string, int> DEFAULT_HTML_TAG{
+const std::unordered_map<std::string, int> HttpRequest::DEFAULT_HTML_TAG{
     {"/register.html", 0}, // 0 = 注册页面
     {"/login.html", 1},    // 1 = 登录页面
 };
