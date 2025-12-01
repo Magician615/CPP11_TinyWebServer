@@ -108,3 +108,41 @@ union epoll_data {
 
 优先／紧急
 * `EPOLLPRI`：带外数据到达（很少用，TCP 带外较罕见）。
+
+## 7.WebServer 类详解
+### 7.1 初始化
+* 创建线程池：线程池的构造函数中会创建线程并且`detach()`
+* 初始化Socket的函数`InitSocket_();`：C/S中，服务器套接字的初始化无非就是`socket` - `bind` - `listen` - `accept` - 发送接收数据这几个过程；函数执行到`listen`后，把前面得到的 listenfd 添加到 epoller 模型中，即把 `accept()` 和接收数据的操作交给 epoller 处理了。并且把该监听描述符设置为非阻塞。
+* 初始化事件模式函数：`InitEventMode_(trigMode);`，将 `listenEvent_` 和 `connEvent_` 都设置为 `EPOLLET` 模式。
+* 初始化数据库连接池：`SqlConnPool::Instance()->Init();`创造单例连接池，执行初始化函数。
+* 初始化日志系统：在初始化函数中，创建阻塞队列和写线程，并创建日志。
+
+### 7.2 启动WebServer
+接下来启动WebServer，首先需要设定 `epoll_wait()` 等待的时间，这里我们选择调用定时器的 `GetNextTick()` 函数，这个函数的作用是返回最小堆堆顶的连接设定的过期时间与现在时间的差值。这个时间的选择可以保证服务器等待事件的时间不至于太短也不至于太长。接着调用 `epoll_wait()` 函数，返回需要已经就绪事件的数目。这里的就绪事件分为两类：收到新的 http 请求和其他的读写事件。 这里设置两个变量 `fd` 和 `events` 分别用来存储就绪事件的文件描述符和事件类型。  
+1.收到新的 HTTP 请求的情况  
+在 `fd==listenFd_` 的时候，也就是收到新的 HTTP 请求的时候，调用函数 `DealListen_();` 处理监听，接受客户端连接；  
+2.已经建立连接的 HTTP 发来 IO 请求的情况  
+在 `events& EPOLLIN` 或 `events& EPOLLOUT` 为真时，需要进行读写的处理。分别调用 `DealRead_(&users_[fd])` 和 `DealWrite_(&users_[fd])` 函数。这里需要说明： `DealListen_()` 函数并没有调用线程池中的线程，而 `DealRead_(&users_[fd])` 和 `DealWrite_(&users_[fd])` 则都交由线程池中的线程进行处理了。  
+这就是Reactor，读写事件交给了工作线程处理。
+
+### 7.3 I/O处理的具体流程
+`DealRead_(&users_[fd])` 和 `DealWrite_(&users_[fd])` 通过调用
+```
+threadpool_->AddTask(std::bind(&WebServer::OnRead_, this, client));     //读
+threadpool_->AddTask(std::bind(&WebServer::OnWrite_, this, client));    //写
+```
+函数来取出线程池中的线程继续进行读写，而主进程这时可以继续监听新来的就绪事件了。  
+
+注意此处用 `std::bind` 将参数绑定，他可以将可调用对象将参数绑定为一个仿函数，绑定后的结果可以使用 `std::function` 保存，而且 `bind` 绑定类成员函数时，第一个参数表示对象的成员函数的指针（所以上面的函数用的是 `&WebServer::OnRead_`），第二个参数表示对象的地址。  
+
+`OnRead_()` 函数首先把数据从缓冲区中读出来(调用 HttpConn 的 `read`, `read` 调用 `ReadFd` 读取到读缓冲区 `Buffer`)，然后交由逻辑函数 `OnProcess()` 处理。注意，`process()` 函数在解析请求报文后随即就生成了响应报文等待 `OnWrite_()` 函数发送。  
+
+这里必须说清楚 `OnRead_()` 和 `OnWrite_()` 函数进行读写的方法，那就是分散读和集中写：  
+
+分散读（scatter read）和集中写（gatherwrite）具体来说是来自读操作的输入数据被分散到多个应用缓冲区中，而来自应用缓冲区的输出数据则被集中提供给单个写操作。 这样做的好处是：它们只需一次系统调用就可以实现在文件和进程的多个缓冲区之间传送数据，免除了多次系统调用或复制数据的开销。  
+
+`OnWrite_()` 函数首先把之前根据请求报文生成的响应报文从缓冲区交给 `fd`，传输完成后修改该 `fd` 的 `events`.  
+
+`OnProcess()` 就是进行业务逻辑处理（解析请求报文、生成响应报文）的函数了。  
+
+一定要记住：“如果没有数据到来，`epoll` 是不会被触发的”。当浏览器向服务器发出 `request` 的时候，`epoll` 会接收到 `EPOLL_IN` 读事件，此时调用 `OnRead()` 去解析，将 `fd`(浏览器) 的 `request` 内容放到读缓冲区，并且把响应报文写到写缓冲区，这个时候调用 `OnProcess()` 是为了把该事件变为 `EPOLL_OUT`，让 `epoll` 下一次检测到写事件，把写缓冲区的内容写到 `fd`。当 `EPOLL_OUT` 写完后，整个流程就结束了，此时需要再次把他置回原来的 `EPOLL_IN` 去检测新的读事件到来。
