@@ -250,11 +250,11 @@ bool HttpRequest::UserVerify(const std::string& name, const std::string& pwd, bo
     SqlConnRAII(&sql, SqlConnPool::Instance()); // 从连接池中获取 MySQL 连接，RAII 自动回收
     assert(sql);                                // 确保数据库连接成功
 
-    bool flag = false;             // 用于判断验证是否成功
-    unsigned int j = 0;            // 保存字段个数
-    char order[256] = {0};         // SQL 语句缓存区
-    MYSQL_FIELD* fields = nullptr; // 字段信息
-    MYSQL_RES* res = nullptr;      // 查询结果集指针
+    bool flag = false;        // 用于判断验证是否成功
+    char order[256] = {0};    // SQL 语句缓存区
+    MYSQL_RES* res = nullptr; // 查询结果集指针
+    // unsigned int j = 0;            // 保存字段个数
+    // MYSQL_FIELD* fields = nullptr; // 字段信息
 
     if (!isLogin) {
         flag = true; // 如果是注册，先假设用户名可用
@@ -270,9 +270,9 @@ bool HttpRequest::UserVerify(const std::string& name, const std::string& pwd, bo
         return false;              // 返回失败
     }
 
-    res = mysql_store_result(sql);    // 获取查询结果
-    j = mysql_num_fields(res);        // 获取列数
-    fields = mysql_fetch_fields(res); // 获取列信息
+    res = mysql_store_result(sql); // 获取查询结果
+    // j = mysql_num_fields(res);        // 获取列数
+    // fields = mysql_fetch_fields(res); // 获取列信息
 
     // 遍历查询结果（如果能取出说明用户名存在）
     while (MYSQL_ROW row = mysql_fetch_row(res)) {

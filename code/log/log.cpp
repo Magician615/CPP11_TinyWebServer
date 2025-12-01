@@ -141,7 +141,7 @@ void Log::write(int level, const char* format, ...) {
     va_list vaList;                        // 可变参数列表对象，用于读取 ... 的参数
 
     // 如果日期变更，或超过每个文件最大行数（默认 50000） → 重新建文件
-    if (toDay_ != t.tm_mday || lineCount_ && (lineCount_ % MAX_LINES == 0)) {
+    if (toDay_ != t.tm_mday || (lineCount_ && (lineCount_ % MAX_LINES == 0))) {
         std::unique_lock<std::mutex> locker(mtx_); // 获取互斥锁（unique_lock 可手动 unlock）
         locker.unlock();                           // 立即释放锁 —— 这里意在不持锁进行耗时操作（但语义上需要注意）
 

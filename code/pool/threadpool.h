@@ -17,7 +17,7 @@ public:
     // make_shared:传递右值，功能是在动态内存中分配一个对象并初始化它，返回指向此对象的shared_ptr
     explicit ThreadPool(size_t threadCount = 8) : pool_(std::make_shared<Pool>()) {
         assert(threadCount > 0); // 确保线程数为正
-        for (int i = 0; i < threadCount; ++i) {
+        for (size_t i = 0; i < threadCount; ++i) {
             // 创建线程并立即 detach（不保留 thread 对象）
             std::thread([this]() {
                 // 每个线程在这里运行一个循环：取任务->执行->等待
